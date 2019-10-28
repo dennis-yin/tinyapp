@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/dennis-yin/tinyapp/issues"
   },
-  "homepage": "https://github.com/dennis-yin/tinyapp#readme"
+  "homepage": "https://github.com/dennis-yin/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
