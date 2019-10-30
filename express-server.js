@@ -3,7 +3,6 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-
 const urlDatabase = {};
 const users = {};
 
@@ -12,6 +11,8 @@ app.use(cookieParser());
 
 app.set("view engine", "ejs");
 
+
+// Routes
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -25,7 +26,11 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  if (!users[req.cookies["user_id"]]) {
+    res.send("Please login first");
+  }
+  const temp = urlsForUser(req.cookies["user_id"]);
+  let templateVars = { urls: temp };
   if (users[req.cookies["user_id"]]) {
     templateVars.user = users[req.cookies["user_id"]];
   }
@@ -51,8 +56,13 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const temp = req.params.shortURL;
-  let templateVars = { longURL: urlDatabase[temp].longURL, shortURL: temp };
+  const shortURL = req.params.shortURL;
+  const urls = urlsForUser(req.cookies["user_id"]);
+  if (!shortURL in urls) {
+    res.send("This URL does not belong to you");
+  }
+
+  let templateVars = { longURL: urlDatabase[shortURL].longURL, shortURL: shortURL };
   if (users[req.cookies["user_id"]]) {
     templateVars.user = users[req.cookies["user_id"]];
   }
@@ -125,6 +135,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
+// Helper functions
 function generateRandomString() {
   return Math.random().toString(36).substring(7);
 };
@@ -137,4 +148,14 @@ function checkEmailExists(obj, email) {
     }
   }
   return false;
+};
+
+function urlsForUser(id) {
+  let urls = {};
+  for (const url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      urls[url] = urlDatabase[url];
+    }
+  }
+  return urls;
 };
