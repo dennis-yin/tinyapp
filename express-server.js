@@ -68,7 +68,7 @@ app.post("/register", (req, res) => {
   const randomID = generateRandomString();
   const user = req.body;
 
-  if (!user.username || !user.password) {
+  if (!user.email || !user.password) {
     res.status(400).send("400 error: Invalid email or password");
   }
 
@@ -76,7 +76,7 @@ app.post("/register", (req, res) => {
     res.status(400).send("400 error: Email already registered")
   }
 
-  users[randomID] = { id: randomID, email: user.username, password: user.password };
+  users[randomID] = { id: randomID, email: user.email, password: user.password };
   res.cookie("user_id", randomID);
   res.redirect("/urls");
 });
