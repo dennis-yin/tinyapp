@@ -30,8 +30,8 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
-  if (req.cookies["username"]) {
-    templateVars.username = req.cookies["username"];
+  if (users[req.cookies["user_id"]]) {
+    templateVars.user = users[req.cookies["user_id"]];
   }
   res.render("urls-index", templateVars);
 });
@@ -48,8 +48,8 @@ app.get("/register", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL,
                        longURL: urlDatabase[req.params.shortURL] };
-  if (req.cookies["username"]) {
-    templateVars.username = req.cookies["username"];
+  if (users[req.cookies["user_id"]]) {
+    templateVars.user = users[req.cookies["user_id"]];
   }
   res.render("urls-show", templateVars);
 });
