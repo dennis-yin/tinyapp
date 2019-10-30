@@ -107,7 +107,7 @@ app.post("/login", (req, res) => {
     res.status(403).send("403 error: User with that email could not be found");
   } else {
     if (userLogin.password === userInDatabase.password) {
-      res.cookie("user_id", userInDatabase);
+      res.cookie("user_id", userInDatabase.id);
       res.redirect("/urls");
     } else {
       res.status(403).send("403 error: Incorrect password");
@@ -130,8 +130,9 @@ function generateRandomString() {
 
 function checkEmailExists(obj, email) {
   for (const userID in obj) {
-    if (userID.email === email) {
-      return userID;
+    if (users[userID].email === email) {
+      console.log(userID)
+      return users[userID];
     }
   }
   return false;
