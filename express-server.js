@@ -37,7 +37,11 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
+  if (users[req.cookies["user_id"]]) {
   res.render("urls-new");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/register", (req, res) => {
