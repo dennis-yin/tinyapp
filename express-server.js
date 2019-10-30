@@ -100,12 +100,23 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  res.redirect("/urls");
+  userLogin = req.body;
+  userInDatabase = checkEmailExists(users, userLogin.email);
+
+  if (!userInDatabase) {
+    res.status(403).send("403 error: User with that email could not be found");
+  } else {
+    if (userLogin.password === userInDatabase.password) {
+      res.cookie("user_id", userInDatabase);
+      res.redirect("/urls");
+    } else {
+      res.status(403).send("403 error: Incorrect password");
+    }
+  }
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
@@ -120,7 +131,7 @@ function generateRandomString() {
 function checkEmailExists(obj, email) {
   for (const userID in obj) {
     if (userID.email === email) {
-      return true;
+      return userID;
     }
   }
   return false;
