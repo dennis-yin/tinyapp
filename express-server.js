@@ -4,11 +4,7 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
-
+const urlDatabase = {};
 const users = {};
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -55,8 +51,8 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL,
-                       longURL: urlDatabase[req.params.shortURL] };
+  const temp = req.params.shortURL;
+  let templateVars = { longURL: urlDatabase[temp].longURL, shortURL: temp };
   if (users[req.cookies["user_id"]]) {
     templateVars.user = users[req.cookies["user_id"]];
   }
@@ -87,7 +83,7 @@ app.post("/register", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const randomURL = generateRandomString();
-  urlDatabase[randomURL] = req.body["longURL"];
+  urlDatabase[randomURL] = { longURL: req.body["longURL"], userID: req.cookies["user_id"] };
   res.redirect(`/urls/${randomURL}`);
 });
 
@@ -97,9 +93,10 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  let newURL = req.body.newURL;
-  let shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = newURL;
+  const newURL = req.body.newURL;
+  const shortURL = req.params.shortURL;
+  const userID = req.cookies["user_id"];
+  urlDatabase[shortURL] = { newURL, userID };
   res.redirect("/urls");
 });
 
