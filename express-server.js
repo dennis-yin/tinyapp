@@ -4,15 +4,17 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
-
-app.set("view engine", "ejs");
-
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+const users = {};
+
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
+
+app.set("view engine", "ejs");
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -38,6 +40,11 @@ app.get("/urls/new", (req, res) => {
   res.render("urls-new");
 });
 
+app.get("/register", (req, res) => {
+  res.render("register");
+  res.redirect("/urls");
+});
+
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL,
                        longURL: urlDatabase[req.params.shortURL] };
@@ -50,6 +57,23 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
+});
+
+app.post("/register", (req, res) => {
+  const randomID = generateRandomString();
+  const user = req.body;
+
+  if (!user.username || !user.password) {
+    res.status(400).send("400 error: Invalid email or password");
+  }
+
+  if (checkEmailExists(users, user.email)) {
+    res.status(400).send("400 error: Email already registered")
+  }
+
+  users[randomID] = { id: randomID, email: user.username, password: user.password };
+  res.cookie("user_id", randomID);
+  res.redirect("/urls");
 });
 
 app.post("/urls", (req, res) => {
@@ -86,4 +110,13 @@ app.listen(PORT, () => {
 
 function generateRandomString() {
   return Math.random().toString(36).substring(7);
+};
+
+function checkEmailExists(obj, email) {
+  for (const userID in obj) {
+    if (userID.email === email) {
+      return true;
+    }
+  }
+  return false;
 };
