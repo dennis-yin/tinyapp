@@ -4,6 +4,8 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcrypt");
+const helpers = require("./helpers")
+
 const urlDatabase = {};
 const users = {};
 
@@ -33,7 +35,7 @@ app.get("/urls", (req, res) => {
   if (!users[req.session["user_id"]]) {
     res.send("Please login first");
   }
-  const temp = urlsForUser(req.session["user_id"]);
+  const temp = helpers.urlsForUser(req.session["user_id"], urlDatabase);
   let templateVars = { urls: temp };
   if (users[req.session["user_id"]]) {
     templateVars.user = users[req.session["user_id"]];
@@ -61,9 +63,12 @@ app.get("/login", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const urls = urlsForUser(req.session["user_id"]);
-  if (!shortURL in urls) {
-    res.send("This URL does not belong to you");
+  const urls = helpers.urlsForUser(req.session["user_id"], urlDatabase);
+  // console.log(shortURL);
+  // console.log(Object.keys(urls));
+  // FIX THIS PART
+  if (!shortURL in Object.keys(urls)) {
+    res.status(300).send("This URL does not belong to you");
   }
 
   let templateVars = { longURL: urlDatabase[shortURL].longURL, shortURL: shortURL };
@@ -79,14 +84,14 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const randomID = generateRandomString();
+  const randomID = helpers.generateRandomString();
   const user = req.body;
 
   if (!user.email || !user.password) {
     res.status(400).send("400 error: Invalid email or password");
   }
 
-  if (checkEmailExists(users, user.email)) {
+  if (helpers.checkEmailExists(users, user.email)) {
     res.status(400).send("400 error: Email already registered")
   }
 
@@ -97,7 +102,7 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  const randomURL = generateRandomString();
+  const randomURL = helpers.generateRandomString();
   urlDatabase[randomURL] = { longURL: req.body["longURL"], userID: req.session["user_id"] };
   res.redirect(`/urls/${randomURL}`);
 });
@@ -122,7 +127,7 @@ app.post("/urls/:shortURL", (req, res) => {
 
 app.post("/login", (req, res) => {
   userLogin = req.body;
-  userInDatabase = checkEmailExists(users, userLogin.email);
+  userInDatabase = helpers.checkEmailExists(users, userLogin.email);
 
   if (!userInDatabase) {
     res.status(403).send("403 error: User with that email could not be found");
@@ -144,27 +149,3 @@ app.post("/logout", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-// Helper functions
-function generateRandomString() {
-  return Math.random().toString(36).substring(7);
-};
-
-function checkEmailExists(obj, email) {
-  for (const userID in obj) {
-    if (users[userID].email === email) {
-      return users[userID];
-    }
-  }
-  return false;
-};
-
-function urlsForUser(id) {
-  let urls = {};
-  for (const url in urlDatabase) {
-    if (urlDatabase[url].userID === id) {
-      urls[url] = urlDatabase[url];
-    }
-  }
-  return urls;
-};
