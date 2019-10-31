@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcrypt");
 const urlDatabase = {};
 const users = {};
 
@@ -86,7 +87,8 @@ app.post("/register", (req, res) => {
     res.status(400).send("400 error: Email already registered")
   }
 
-  users[randomID] = { id: randomID, email: user.email, password: user.password };
+  const hashedPassword = bcrypt.hashSync(user.password, 10);
+  users[randomID] = { id: randomID, email: user.email, password: hashedPassword };
   res.cookie("user_id", randomID);
   res.redirect("/urls");
 });
@@ -98,16 +100,21 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
+  if (req.cookies["user_id"] === urlDatabase[req.params.shortURL].userID) {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls");
+  };
 });
 
+// Edit the long URL that relates to a short URL
 app.post("/urls/:shortURL", (req, res) => {
-  const newURL = req.body.newURL;
-  const shortURL = req.params.shortURL;
-  const userID = req.cookies["user_id"];
-  urlDatabase[shortURL] = { newURL, userID };
-  res.redirect("/urls");
+  if (req.cookies["user_id"] === urlDatabase[req.params.shortURL].userID) {
+    const newURL = req.body.newURL;
+    const shortURL = req.params.shortURL;
+    const userID = req.cookies["user_id"];
+    urlDatabase[shortURL] = { newURL, userID };
+    res.redirect("/urls");
+  };
 });
 
 app.post("/login", (req, res) => {
@@ -117,7 +124,7 @@ app.post("/login", (req, res) => {
   if (!userInDatabase) {
     res.status(403).send("403 error: User with that email could not be found");
   } else {
-    if (userLogin.password === userInDatabase.password) {
+    if (bcrypt.compareSync(userLogin.password, userInDatabase.password)) {
       res.cookie("user_id", userInDatabase.id);
       res.redirect("/urls");
     } else {
