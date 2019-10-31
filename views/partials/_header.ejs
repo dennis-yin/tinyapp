@@ -13,10 +13,10 @@
     </div>
     <% if (typeof user === "undefined") { %>
       <form method="GET" action="/login">
-        <button type="submit" class="btn btn-link">Login</button>
+        <button type="submit" class="btn btn-link"><span style="color:white">Login</span></button>
       </form>
       <form method="GET" action="/register">
-        <button type="submit" class="btn btn-link">Register</button>
+        <button type="submit" class="btn btn-link"><span style="color:white">Register</span></button>
       </form>
     <% } else { %>
       <form method="POST" action="/logout">

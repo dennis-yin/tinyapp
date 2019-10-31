@@ -48,7 +48,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   if (users[req.session.user_id]) {
-    let templateVars = { user: users[req.session.user_id] }
+    let templateVars = { user: users[req.session.user_id] };
     res.render("urls-new", templateVars);
   } else {
     res.redirect("/login");
@@ -109,7 +109,7 @@ app.post("/register", (req, res) => {
 
   const hashedPassword = bcrypt.hashSync(user.password, 10);
   users[randomID] = { id: randomID, email: user.email, password: hashedPassword };
-  req.session.user_id = randomID;   // was res... before; why does this work now
+  req.session.user_id = randomID;
   res.redirect("/urls");
 });
 
@@ -134,12 +134,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 // Edit the long URL that relates to a short URL
 app.post("/urls/:shortURL", (req, res) => {
-  if (users[req.session.user_id] === urlDatabase[req.params.shortURL].userID) {
+  if (users[req.session.user_id].id === urlDatabase[req.params.shortURL].userID) {
     const newURL = req.body.newURL;
     const shortURL = req.params.shortURL;
-    const userID = req.session.user_id;
-    urlDatabase[shortURL] = { newURL, userID };
+    urlDatabase[shortURL].longURL = newURL;
     res.redirect("/urls");
+  } else {
+    res.status(300).send("This URL isn't yours");
   }
 });
 
