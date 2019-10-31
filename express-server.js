@@ -19,7 +19,11 @@ app.set("view engine", "ejs");
 
 // Routes
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  if (users[req.session["user_id"]]) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/urls.json", (req, res) => {
@@ -44,7 +48,8 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   if (users[req.session["user_id"]]) {
-    res.render("urls-new");
+    let templateVars = { user: users[req.session.user_id] }
+    res.render("urls-new", templateVars);
   } else {
     res.redirect("/login");
   }
