@@ -4,7 +4,7 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcrypt");
-const helpers = require("./helpers")
+const helpers = require("./helpers");
 
 const urlDatabase = {};
 const users = {};
@@ -16,7 +16,6 @@ app.use(cookieSession({
 }));
 
 app.set("view engine", "ejs");
-
 
 // Routes
 app.get("/", (req, res) => {
@@ -45,7 +44,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   if (users[req.session["user_id"]]) {
-  res.render("urls-new");
+    res.render("urls-new");
   } else {
     res.redirect("/login");
   }
@@ -64,10 +63,8 @@ app.get("/login", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const urls = helpers.urlsForUser(req.session["user_id"], urlDatabase);
-  // console.log(shortURL);
-  // console.log(Object.keys(urls));
-  // FIX THIS PART
-  if (!shortURL in Object.keys(urls)) {
+
+  if (!(Object.keys(urls).includes(shortURL))) {
     res.status(300).send("This URL does not belong to you");
   }
 
@@ -91,8 +88,8 @@ app.post("/register", (req, res) => {
     res.status(400).send("400 error: Invalid email or password");
   }
 
-  if (helpers.checkEmailExists(users, user.email)) {
-    res.status(400).send("400 error: Email already registered")
+  if (helpers.getUserByEmail(user.email, users)) {
+    res.status(400).send("400 error: Email already registered");
   }
 
   const hashedPassword = bcrypt.hashSync(user.password, 10);
@@ -111,7 +108,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   if (req.session.user_id === urlDatabase[req.params.shortURL].userID) {
     delete urlDatabase[req.params.shortURL];
     res.redirect("/urls");
-  };
+  }
 });
 
 // Edit the long URL that relates to a short URL
@@ -122,12 +119,12 @@ app.post("/urls/:shortURL", (req, res) => {
     const userID = req.session["user_id"];
     urlDatabase[shortURL] = { newURL, userID };
     res.redirect("/urls");
-  };
+  }
 });
 
 app.post("/login", (req, res) => {
-  userLogin = req.body;
-  userInDatabase = helpers.checkEmailExists(users, userLogin.email);
+  const userLogin = req.body;
+  const userInDatabase = users[helpers.getUserByEmail(userLogin.email, users)];
 
   if (!userInDatabase) {
     res.status(403).send("403 error: User with that email could not be found");
@@ -143,7 +140,7 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 app.listen(PORT, () => {
