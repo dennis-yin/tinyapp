@@ -74,6 +74,7 @@ app.get("/login", (req, res) => {
   }
 });
 
+// Display the shortened URL details
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const urls = helpers.urlsForUser(req.session.user_id, urlDatabase);
@@ -92,6 +93,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls-show", templateVars);
 });
 
+// Redirect to the associated website i.e. the long URL
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = urlDatabase[req.params.shortURL];
   if (shortURL) {
