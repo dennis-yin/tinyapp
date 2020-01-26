@@ -21,4 +21,8 @@ function urlsForUser(id, database) {
   return urls;
 }
 
-module.exports = { generateRandomString, getUserByEmail, urlsForUser };
+module.exports = {
+  generateRandomString,
+  getUserByEmail,
+  urlsForUser
+};

@@ -9,7 +9,10 @@ const helpers = require("./helpers");
 const urlDatabase = {};
 const users = {};
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
+
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
@@ -30,16 +33,14 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
 app.get("/urls", (req, res) => {
   if (!users[req.session.user_id]) {
     res.send("Please login first");
   }
   const temp = helpers.urlsForUser(req.session.user_id, urlDatabase);
-  let templateVars = { urls: temp };
+  let templateVars = {
+    urls: temp
+  };
   if (users[req.session.user_id]) {
     templateVars.user = users[req.session.user_id];
   }
@@ -48,7 +49,9 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   if (users[req.session.user_id]) {
-    let templateVars = { user: users[req.session.user_id] };
+    let templateVars = {
+      user: users[req.session.user_id]
+    };
     res.render("urls-new", templateVars);
   } else {
     res.redirect("/login");
@@ -79,7 +82,10 @@ app.get("/urls/:shortURL", (req, res) => {
     res.status(300).send("This URL does not belong to you");
   }
 
-  let templateVars = { longURL: urlDatabase[shortURL].longURL, shortURL: shortURL };
+  let templateVars = {
+    longURL: urlDatabase[shortURL].longURL,
+    shortURL: shortURL
+  };
   if (users[req.session.user_id]) {
     templateVars.user = users[req.session.user_id];
   }
@@ -108,14 +114,21 @@ app.post("/register", (req, res) => {
   }
 
   const hashedPassword = bcrypt.hashSync(user.password, 10);
-  users[randomID] = { id: randomID, email: user.email, password: hashedPassword };
+  users[randomID] = {
+    id: randomID,
+    email: user.email,
+    password: hashedPassword
+  };
   req.session.user_id = randomID;
   res.redirect("/urls");
 });
 
 app.post("/urls", (req, res) => {
   const randomURL = helpers.generateRandomString();
-  urlDatabase[randomURL] = { longURL: req.body["longURL"], userID: req.session.user_id };
+  urlDatabase[randomURL] = {
+    longURL: req.body["longURL"],
+    userID: req.session.user_id
+  };
   res.redirect(`/urls/${randomURL}`);
 });
 
