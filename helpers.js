@@ -8,9 +8,10 @@ function getUserByEmail(email, database) {
       return userID;
     }
   }
-  return undefined;
+  return undefined; // Return undefined if user doesn't exist in database 
 }
 
+// Return shortened URLs that belong to a user in an object
 function urlsForUser(id, database) {
   let urls = {};
   for (const url in database) {
